@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NutriFlow - 맞춤형 주간 식단 관리 웹 서비스</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="사용자의 실제 섭취 데이터를 바탕으로 다음 식단을 역동적으로 제안하는 '폐쇄 루프 지능형 영양 비서' NutriFlow. 초밀착 벤토 박스 레이아웃과 AI 기술을 경험해 보세요.">
+    <meta name="keywords" content="식단관리, AI영양비서, 벤토박스, 웰빙케어, 퍼지전문가, 영양예산, 맞춤식단">
+    <meta name="author" content="NutriFlow Team">
+    <link rel="canonical" href="https://nutriflow-diet.example.com">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://nutriflow-diet.example.com">
+    <meta property="og:title" content="NutriFlow - 지능형 영양 비서">
+    <meta property="og:description" content="실시간 섭취 분석 및 동적 식단 조정을 지원하는 2026 UI/UX 프리미엄 웰니스 서비스">
+    <meta property="og:image" content="assets/og_image.png">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="app-container">
+        
+        <!-- Header -->
+        <header class="main-header">
+            <div class="brand-logo">
+                <i data-lucide="leaf" class="logo-icon"></i>
+                <span class="logo-text">NutriFlow</span>
+            </div>
+            
+            <div class="header-right">
+                <div class="streak-badge" id="streakBadge" title="연속 기록!">
+                    <i data-lucide="flame" class="streak-icon animate-pulse"></i>
+                    <span class="streak-count">7</span><span>일째</span>
+                </div>
+                <div class="profile-avatar" id="profileBtn">
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=100&h=100" alt="사용자 프로필">
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area (Bento Grid) -->
+        <main class="grid-container">
+
+            <!-- Bento Card 1: 온보딩 & 목표 예산 -->
+            <section class="bento-card bento-hero" id="cardOnboarding">
+                <div class="card-header">
+                    <span class="badge">지능형 온보딩</span>
+                    <h2>오늘의 영양 예산 설정</h2>
+                </div>
+                <p class="hero-desc">성별, 활동 수준, 건강 목표를 입력하여 오늘 하루 소비 및 영양소 비율을 정밀 계산합니다.</p>
+                
+                <form id="onboardingForm" class="onboarding-form">
+                    <div class="input-group">
+                        <label for="userGoal">건강 목표</label>
+                        <select id="userGoal" class="custom-select">
+                            <option value="diet" selected>🔥 체지방 감량 (다이어트)</option>
+                            <option value="muscle">💪 근력 향상 (벌크업)</option>
+                            <option value="health">🥗 웰빙 & 체력 유지</option>
+                        </select>
+                    </div>
+                    
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="weightInput">몸무게 (kg)</label>
+                            <input type="number" id="weightInput" value="68" min="30" max="200" class="custom-input">
+                        </div>
+                        <div class="input-group">
+                            <label for="activityLevel">활동도</label>
+                            <select id="activityLevel" class="custom-select">
+                                <option value="light" selected>가벼운 활동</option>
+                                <option value="active">보통 수준</option>
+                                <option value="heavy">매우 활동적</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="primary-btn">영양 예산 업데이트</button>
+                </form>
+            </section>
+
+            <!-- Bento Card 2: 실시간 영양 점수 & 도넛 차트 -->
+            <section class="bento-card bento-status" id="cardStatus">
+                <div class="card-header">
+                    <span class="badge accent">실시간 요약</span>
+                    <h2>영양 예산 & 식습관 점수</h2>
+                </div>
+                
+                <div class="status-content">
+                    <div class="chart-wrapper">
+                        <canvas id="scoreChart"></canvas>
+                        <div class="score-center">
+                            <span class="score-num" id="liveScore">85</span>
+                            <span class="score-lbl">식습관 점수</span>
+                        </div>
+                    </div>
+                    
+                    <div class="nutrition-details">
+                        <div class="detail-item">
+                            <div class="detail-header">
+                                <span>오늘 섭취량</span>
+                                <strong id="caloriesProgress">1,120 / 1,850 kcal</strong>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="calBar" style="width: 60%;"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="macro-chips">
+                            <div class="macro-chip protein">
+                                <span class="dot"></span>
+                                <span class="lbl">단백질</span>
+                                <strong id="macroProtein">65g / 110g</strong>
+                            </div>
+                            <div class="macro-chip carb">
+                                <span class="dot"></span>
+                                <span class="lbl">탄수화물</span>
+                                <strong id="macroCarb">120g / 210g</strong>
+                            </div>
+                            <div class="macro-chip fat">
+                                <span class="dot"></span>
+                                <span class="lbl">지방</span>
+                                <strong id="macroFat">42g / 60g</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Bento Card 3: 동적 식단 플래너 -->
+            <section class="bento-card bento-meals" id="cardMeals">
+                <div class="card-header">
+                    <span class="badge warning">동적 리밸런싱</span>
+                    <h2>오늘의 지능형 식단</h2>
+                </div>
+                <p class="sub-desc">섭취한 점심 데이터에 맞춰 남은 하루 식단이 역동적으로 보정됩니다.</p>
+                
+                <div class="toggle-control-box">
+                    <span class="toggle-label">⚠️ 오늘 점심에 과식하셨나요?</span>
+                    <label class="switch">
+                        <input type="checkbox" id="overeatToggle">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+
+                <div class="meal-timeline">
+                    <!-- 아침 -->
+                    <div class="meal-item done">
+                        <div class="meal-time">아침 (완료)</div>
+                        <div class="meal-body">
+                            <div class="meal-img-placeholder" style="background-image: url('https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&q=80&w=200&h=200')"></div>
+                            <div class="meal-info">
+                                <h3>그릭 요거트 & 그래놀라</h3>
+                                <p class="meal-meta">🥚 350 kcal | 단백질 18g</p>
+                            </div>
+                            <div class="status-icon"><i data-lucide="check-circle-2"></i></div>
+                        </div>
+                    </div>
+
+                    <!-- 점심 -->
+                    <div class="meal-item done" id="lunchMeal">
+                        <div class="meal-time">점심 (완료)</div>
+                        <div class="meal-body">
+                            <div class="meal-img-placeholder" id="lunchImg" style="background-image: url('https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=200&h=200')"></div>
+                            <div class="meal-info">
+                                <h3 id="lunchTitle">아보카도 훈제연어 샐러드</h3>
+                                <p class="meal-meta" id="lunchMeta">🥑 480 kcal | 단백질 28g</p>
+                            </div>
+                            <div class="status-icon"><i data-lucide="check-circle-2"></i></div>
+                        </div>
+                    </div>
+
+                    <!-- 저녁 -->
+                    <div class="meal-item pending active-pulse" id="dinnerMeal">
+                        <div class="meal-time">저녁 (추천) <span class="adjusted-badge" id="adjBadge">기본 예산</span></div>
+                        <div class="meal-body">
+                            <div class="meal-img-placeholder" id="dinnerImg" style="background-image: url('https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&q=80&w=200&h=200')"></div>
+                            <div class="meal-info">
+                                <h3 id="dinnerTitle">그릴드 치킨 & 버섯 구이</h3>
+                                <p class="meal-meta" id="dinnerMeta">🍗 420 kcal | 단백질 35g</p>
+                            </div>
+                            <button class="eat-btn" id="dinnerEatBtn">기록하기</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Bento Card 4: 대체 식재료 스와이프 -->
+            <section class="bento-card bento-swipe" id="cardSwipe">
+                <div class="card-header">
+                    <span class="badge info">대체재 스와이프</span>
+                    <h2>기피 재료 대체하기</h2>
+                </div>
+                <p class="sub-desc">주간 식재료 중 비선호 재료를 스와이프하여 영양소가 완벽히 일치하는 대체재로 교체하세요.</p>
+
+                <div class="swipe-container">
+                    <button class="swipe-nav prev" id="swipePrev"><i data-lucide="chevron-left"></i></button>
+                    
+                    <div class="swipe-card-wrapper" id="swipeCardWrapper">
+                        <div class="swipe-card" id="foodCard">
+                            <div class="food-card-front">
+                                <div class="food-img" style="background-image: url('https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?auto=format&fit=crop&q=80&w=300&h=300')"></div>
+                                <div class="food-info">
+                                    <span class="food-tag allergy">🙅 알레르기 유발 가능</span>
+                                    <h3>신선한 생 아보카도</h3>
+                                    <p class="food-desc">부드러운 불포화지방산이 풍부하나 체질에 따라 가려움증을 유발할 수 있습니다.</p>
+                                    <div class="food-stats">
+                                        <span>🥑 160 kcal</span>
+                                        <span>💪 지방 15g</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="swipe-nav next" id="swipeNext"><i data-lucide="chevron-right"></i></button>
+                </div>
+                <div class="swipe-instruction">
+                    <i data-lucide="arrow-left-right"></i> <span>카드를 넘겨 영양 보존 대체재를 탐색하세요.</span>
+                </div>
+            </section>
+
+            <!-- Bento Card 5: 퍼지 전문가 시스템 -->
+            <section class="bento-card bento-fuzzy" id="cardFuzzy">
+                <div class="card-header">
+                    <span class="badge purple">퍼지 전문가 조언</span>
+                    <h2>모호한 상태 진단 AI</h2>
+                </div>
+                <p class="sub-desc">스트레스와 소화 장애 같은 정성적 상태를 슬라이더로 분석하여 맞춤형 웰빙 관리 처방을 도출합니다.</p>
+                
+                <div class="fuzzy-inputs">
+                    <div class="slider-group">
+                        <div class="slider-header">
+                            <span>스트레스 체감 수준</span>
+                            <strong id="stressVal">약간 있음 (45%)</strong>
+                        </div>
+                        <input type="range" id="stressSlider" min="0" max="100" value="45" class="custom-range">
+                    </div>
+
+                    <div class="slider-group">
+                        <div class="slider-header">
+                            <span>복부 팽만 및 소화 불편도</span>
+                            <strong id="digestVal">거의 편안함 (20%)</strong>
+                        </div>
+                        <input type="range" id="digestSlider" min="0" max="100" value="20" class="custom-range">
+                    </div>
+                </div>
+
+                <div class="fuzzy-output-box">
+                    <div class="output-header">
+                        <i data-lucide="sparkles" class="fuzzy-spark"></i>
+                        <h3>집중 영양 제언</h3>
+                    </div>
+                    <div class="output-content" id="fuzzyAdvise">
+                        스트레스가 다소 있고 소화는 원활한 상태입니다. 긴장을 이완시키기 위해 <strong>마그네슘이 풍부한 견과류</strong>를 저녁에 가볍게 추가하는 것이 신경 안정에 도움이 됩니다.
+                    </div>
+                </div>
+            </section>
+
+            <!-- Bento Card 6: AI 멀티 에이전트 & 사진 스캔 -->
+            <section class="bento-card bento-ai" id="cardAI">
+                <div class="card-header">
+                    <div class="ai-tabs">
+                        <button class="ai-tab active" id="tabVision"><i data-lucide="eye"></i> 비전 에이전트</button>
+                        <button class="ai-tab" id="tabChat"><i data-lucide="message-square"></i> 대화형 에이전트</button>
+                    </div>
+                </div>
+
+                <!-- 비전 에이전트 뷰 -->
+                <div class="ai-view active" id="viewVision">
+                    <div class="vision-scan-box">
+                        <div class="scan-overlay" id="scanOverlay">
+                            <div class="scanner-bar"></div>
+                        </div>
+                        <div class="preview-img" id="scanPreview" style="background-image: url('https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&q=80&w=400&h=300')"></div>
+                        <div class="upload-trigger" id="uploadBtn">
+                            <i data-lucide="camera" class="camera-icon"></i>
+                            <span>식단 사진 올려서 자동 분석하기</span>
+                        </div>
+                    </div>
+                    <div class="vision-results" id="visionResults">
+                        <p class="scan-info">샐러드 이미지 스캔 준비 완료.</p>
+                        <button class="scan-btn" id="startScanBtn">🔍 음식 스캔 시작</button>
+                    </div>
+                </div>
+
+                <!-- 대화형 에이전트 뷰 -->
+                <div class="ai-view" id="viewChat">
+                    <div class="chat-container">
+                        <div class="chat-history" id="chatHistory">
+                            <div class="chat-message ai">
+                                안녕하세요! 당신의 문화적 기호와 건강 상태에 맞춘 맞춤형 식단 레시피를 제안하는 대화형 에이전트입니다. 알레르기 정보나 원하시는 식사 스타일(한식, 양식, 일식 등)을 말씀해주세요!
+                            </div>
+                        </div>
+                        
+                        <div class="chat-filters">
+                            <button class="filter-chip active" data-style="korean">한식 선호</button>
+                            <button class="filter-chip" data-style="western">양식 선호</button>
+                            <button class="filter-chip" data-allergy="peanut">🥜 땅콩 알레르기</button>
+                        </div>
+                        
+                        <div class="chat-input-box">
+                            <input type="text" id="chatInput" placeholder="예: '단백질이 많고 매콤한 한식 저녁 추천해줘!'" class="chat-input">
+                            <button id="sendChatBtn" class="chat-send-btn"><i data-lucide="send"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Bento Card 7: 수익 모델 -->
+            <section class="bento-card bento-monetization" id="cardStore">
+                <div class="card-header">
+                    <span class="badge accent">Premium Store</span>
+                    <h2>NutriFlow 멤버십 & 마켓</h2>
+                </div>
+                
+                <div class="monetization-grid">
+                    <div class="store-item">
+                        <div class="store-info">
+                            <h3>👑 프리미엄 1:1 AI 영양 코칭</h3>
+                            <p>실시간 분석 한도 무제한 및 전문 코칭 피드백</p>
+                        </div>
+                        <div class="store-action">
+                            <span class="price">₩9,900/월</span>
+                            <button class="buy-btn" onclick="addToCart('premium')">구독</button>
+                        </div>
+                    </div>
+
+                    <div class="store-item">
+                        <div class="store-info">
+                            <h3>📚 키토/비건 맞춤 가이드 (PDF)</h3>
+                            <p>유명 임상영양학자 공동 감수 4주 완성 바이블</p>
+                        </div>
+                        <div class="store-action">
+                            <span class="price">₩4,500</span>
+                            <button class="buy-btn" onclick="addToCart('pdf')">구매</button>
+                        </div>
+                    </div>
+
+                    <!-- 장바구니 -->
+                    <div class="cart-summary" id="cartSummary">
+                        <span>🛒 장바구니: <strong>비어 있음</strong></span>
+                        <button class="checkout-btn" id="checkoutBtn" disabled>결제하기</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Bento Card 8: 게이미피케이션 & 소셜 공유 -->
+            <section class="bento-card bento-social" id="cardSocial">
+                <div class="card-header">
+                    <span class="badge warning">습관 형성</span>
+                    <h2>게이미피케이션 챌린지</h2>
+                </div>
+                
+                <div class="social-content">
+                    <div class="streak-circle">
+                        <i data-lucide="trophy" class="trophy-icon"></i>
+                        <span>이번 주 미션 달성도</span>
+                        <strong class="percentage">85%</strong>
+                    </div>
+                    
+                    <div class="share-box">
+                        <p class="share-title">"오늘의 식단 기록을 자랑하고 연속 기록(Streak)을 유지하세요!"</p>
+                        <div class="social-buttons">
+                            <button class="social-btn instagram" id="btnShareInsta">
+                                <i data-lucide="instagram"></i> Instagram 인증
+                            </button>
+                            <button class="social-btn tiktok" id="btnShareTiktok">
+                                <i data-lucide="video"></i> TikTok 챌린지
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>&copy; 2026 NutriFlow. All rights reserved. | 지능형 폐쇄루프 영양비서 시스템 v1.2</p>
+        </footer>
+
+        <!-- Celebration Modal -->
+        <div class="modal-overlay" id="celebrationModal">
+            <div class="modal-box">
+                <div class="modal-emoji">🎉</div>
+                <h2>연속 식단 기록 성공!</h2>
+                <p>축하합니다! <strong>8일 연속 기록</strong>을 달성하셨습니다. 건강한 라이프스타일을 향한 든든한 걸음마를 이어가고 계시네요!</p>
+                <div class="badge-showcase">
+                    <div class="badge-item">
+                        <i data-lucide="flame" class="fire-badge"></i>
+                        <span>8일 연속</span>
+                    </div>
+                    <div class="badge-item">
+                        <i data-lucide="shield-check" class="shield-badge"></i>
+                        <span>수호자</span>
+                    </div>
+                </div>
+                <button class="primary-btn" id="modalCloseBtn">멋집니다! 계속 기록하기</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- JavaScript -->
+    <script src="app.js"></script>
+</body>
+</html>
